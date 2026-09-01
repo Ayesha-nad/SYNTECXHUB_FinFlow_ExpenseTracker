@@ -133,23 +133,25 @@ const INITIAL_FILTERS = {
   order: 'desc'
 };
 
-const STORAGE_KEY = 'finflow_expenses_pkr_v2';
+export const useExpenses = (user = null, initialBudget = 150000) => {
+  // Derive user-scoped storage keys
+  const userId = user?._id || user?.id || 'guest';
+  const storageKey = `finflow_expenses_${userId}`;
+  const budgetKey = `finflow_budget_${userId}`;
 
-export const useExpenses = (initialBudget = 150000) => {
-  // --- useState: Core State Variables with instant LocalStorage hydration ---
+  // State: Hydrate strictly from active user's local storage key
   const [expenses, setExpenses] = useState(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(storageKey);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           return parsed;
         }
       }
     } catch {
       // ignore
     }
-    // Default PKR fallback
     return DEFAULT_PKR_EXPENSES;
   });
 
@@ -159,24 +161,46 @@ export const useExpenses = (initialBudget = 150000) => {
   const [editingExpense, setEditingExpense] = useState(null);
   const [lastAddedId, setLastAddedId] = useState(null);
   const [monthlyBudget, setMonthlyBudget] = useState(() => {
-    const saved = localStorage.getItem('finflow_budget_pkr');
-    return saved ? Number(saved) : initialBudget;
+    const saved = localStorage.getItem(budgetKey);
+    return saved ? Number(saved) : (user?.monthlyBudget || initialBudget);
   });
   const [toasts, setToasts] = useState([]);
 
-  // Auto-sync expenses to LocalStorage whenever state changes
+  // When user changes (Login/Logout/Switch account), switch dataset immediately
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
+      const savedExpenses = localStorage.getItem(storageKey);
+      if (savedExpenses) {
+        const parsed = JSON.parse(savedExpenses);
+        if (Array.isArray(parsed)) {
+          setExpenses(parsed);
+        }
+      } else {
+        // Initial setup for new user
+        setExpenses(DEFAULT_PKR_EXPENSES);
+        localStorage.setItem(storageKey, JSON.stringify(DEFAULT_PKR_EXPENSES));
+      }
+
+      const savedBudget = localStorage.getItem(budgetKey);
+      setMonthlyBudget(savedBudget ? Number(savedBudget) : (user?.monthlyBudget || initialBudget));
+    } catch (e) {
+      console.warn('Account dataset switch error:', e);
+    }
+  }, [storageKey, budgetKey, user, initialBudget]);
+
+  // Auto-sync expenses to user-specific localStorage key
+  useEffect(() => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(expenses));
     } catch (err) {
       console.warn('LocalStorage save error:', err);
     }
-  }, [expenses]);
+  }, [expenses, storageKey]);
 
-  // Sync budget to localStorage
+  // Sync budget to user-specific localStorage key
   useEffect(() => {
-    localStorage.setItem('finflow_budget_pkr', monthlyBudget);
-  }, [monthlyBudget]);
+    localStorage.setItem(budgetKey, monthlyBudget);
+  }, [monthlyBudget, budgetKey]);
 
   // Toast notification helper
   const addToast = useCallback((message, type = 'success') => {
@@ -202,7 +226,6 @@ export const useExpenses = (initialBudget = 150000) => {
       if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
         return;
       }
-      // On static hosts like GitHub Pages, seamlessly continue in resilient offline mode
       console.info('FinFlow operating in persistent offline mode (LocalStorage).');
     }
   }, []);
@@ -213,7 +236,7 @@ export const useExpenses = (initialBudget = 150000) => {
     return () => {
       controller.abort();
     };
-  }, [fetchExpenses]);
+  }, [fetchExpenses, userId]);
 
   // --- CRUD Handlers with Guaranteed LocalStorage Persistence ---
 
@@ -223,15 +246,15 @@ export const useExpenses = (initialBudget = 150000) => {
     const newExpense = {
       _id: newId,
       ...expenseData,
+      user: userId !== 'guest' ? userId : undefined,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
 
-    // 1. Immediately persist to state & localStorage
     setExpenses((prev) => {
       const updated = [newExpense, ...prev];
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        localStorage.setItem(storageKey, JSON.stringify(updated));
       } catch (e) {
         console.warn(e);
       }
@@ -245,15 +268,15 @@ export const useExpenses = (initialBudget = 150000) => {
       setLastAddedId((curr) => (curr === newId ? null : curr));
     }, 3000);
 
-    // 2. Background attempt to sync with backend API if online
+    // Background attempt to sync with backend API if online
     try {
       await expenseApi.createExpense(expenseData);
     } catch {
-      // Already saved in localStorage
+      // Saved in user's localStorage
     }
 
     return { success: true, data: newExpense };
-  }, [addToast]);
+  }, [addToast, storageKey, userId]);
 
   // Edit / Update Expense
   const handleUpdateExpense = useCallback(async (id, updateData) => {
@@ -262,7 +285,7 @@ export const useExpenses = (initialBudget = 150000) => {
         item._id === id ? { ...item, ...updateData, updatedAt: new Date().toISOString() } : item
       );
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+        localStorage.setItem(storageKey, JSON.stringify(updatedList));
       } catch (e) {
         console.warn(e);
       }
@@ -272,7 +295,6 @@ export const useExpenses = (initialBudget = 150000) => {
     setEditingExpense(null);
     addToast(`Updated expense details`, 'success');
 
-    // Background attempt to sync with backend
     try {
       await expenseApi.updateExpense(id, updateData);
     } catch {
@@ -280,7 +302,7 @@ export const useExpenses = (initialBudget = 150000) => {
     }
 
     return { success: true };
-  }, [addToast]);
+  }, [addToast, storageKey]);
 
   // Set active item to edit
   const handleStartEdit = useCallback((expense) => {
@@ -296,7 +318,7 @@ export const useExpenses = (initialBudget = 150000) => {
     setExpenses((prev) => {
       const updatedList = prev.filter((item) => item._id !== id);
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+        localStorage.setItem(storageKey, JSON.stringify(updatedList));
       } catch (e) {
         console.warn(e);
       }
@@ -305,13 +327,12 @@ export const useExpenses = (initialBudget = 150000) => {
 
     addToast('Expense removed', 'info');
 
-    // Background attempt to sync with backend
     try {
       await expenseApi.deleteExpense(id);
     } catch {
       // Deleted locally
     }
-  }, [addToast]);
+  }, [addToast, storageKey]);
 
   // Filter change handler
   const handleFilterChange = useCallback((key, value) => {
@@ -330,7 +351,7 @@ export const useExpenses = (initialBudget = 150000) => {
   const handleSeedData = useCallback(async () => {
     setExpenses(DEFAULT_PKR_EXPENSES);
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_PKR_EXPENSES));
+      localStorage.setItem(storageKey, JSON.stringify(DEFAULT_PKR_EXPENSES));
     } catch (e) {
       console.warn(e);
     }
@@ -341,7 +362,7 @@ export const useExpenses = (initialBudget = 150000) => {
     } catch {
       // Loaded locally
     }
-  }, [addToast]);
+  }, [addToast, storageKey]);
 
   // --- useMemo: Derived Filtered & Sorted Expenses List ---
   const filteredExpenses = useMemo(() => {

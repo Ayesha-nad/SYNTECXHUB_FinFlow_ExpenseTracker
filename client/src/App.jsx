@@ -7,6 +7,7 @@ import {
   X,
   Sparkles,
 } from 'lucide-react';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import useExpenses from './hooks/useExpenses';
 import Navbar, { COLOR_THEMES } from './components/Navbar';
 import AnimatedBackground from './components/AnimatedBackground';
@@ -17,10 +18,13 @@ import ExpenseFilters from './components/ExpenseFilters';
 import ExpenseList from './components/ExpenseList';
 import ChartPanel from './components/ChartPanel';
 import BudgetModal from './components/BudgetModal';
+import AuthModal from './components/AuthModal';
 import { SummaryCardSkeleton } from './components/Loader';
 import confetti from 'canvas-confetti';
 
-function App() {
+function ExpenseTrackerDashboard() {
+  const { user } = useAuth();
+
   // Theme state with local persistence
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('finflow_theme') || 'light';
@@ -36,13 +40,13 @@ function App() {
     return COLOR_THEMES[0]; // Default Electric Indigo
   });
 
-  // Budget modal state
+  // Modals state
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
-
-  // Mobile add expense modal state
   const [isMobileFormOpen, setIsMobileFormOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalTab, setAuthModalTab] = useState('login');
 
-  // Initialize custom hook with default PKR 150,000 budget
+  // Initialize custom hook scoped to current user
   const {
     expenses,
     filteredExpenses,
@@ -67,7 +71,7 @@ function App() {
     handleRefresh,
     removeToast,
     addToast,
-  } = useExpenses(150000);
+  } = useExpenses(user, 150000);
 
   // Sync theme with DOM attribute
   useEffect(() => {
@@ -106,6 +110,12 @@ function App() {
       // ignore
     }
   }, [addToast]);
+
+  // Open Auth Modal
+  const handleOpenAuthModal = useCallback((tab = 'login') => {
+    setAuthModalTab(tab);
+    setIsAuthModalOpen(true);
+  }, []);
 
   // Seed sample data with celebratory confetti
   const handleSeedDataWithCelebration = useCallback(async () => {
@@ -176,7 +186,7 @@ function App() {
         onSeedData={handleSeedDataWithCelebration}
         onRefresh={handleRefresh}
         onExportCSV={handleExportCSV}
-        onOpenMobileForm={() => setIsMobileFormOpen(true)}
+        onOpenAuthModal={handleOpenAuthModal}
         loading={loading}
       />
 
@@ -286,7 +296,7 @@ function App() {
         <Plus size={26} />
       </button>
 
-      {/* Mobile Slide-Up Modal / Drawer for Expense Form */}
+      {/* Mobile Slide-Up Modal for Expense Form */}
       {isMobileFormOpen && (
         <div className="modal-backdrop" onClick={() => setIsMobileFormOpen(false)}>
           <div
@@ -352,6 +362,13 @@ function App() {
         }}
       />
 
+      {/* User Authentication Modal (Sign In / Register) */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        defaultTab={authModalTab}
+      />
+
       {/* Toast Notifications */}
       <div className="toast-container">
         {toasts.map((toast) => (
@@ -386,4 +403,10 @@ function App() {
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <AuthProvider>
+      <ExpenseTrackerDashboard />
+    </AuthProvider>
+  );
+}

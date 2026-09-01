@@ -12,6 +12,11 @@ const CATEGORIES = [
 
 const expenseSchema = new mongoose.Schema(
   {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false
+    },
     title: {
       type: String,
       required: [true, 'Please provide an expense title'],
@@ -50,7 +55,7 @@ const expenseSchema = new mongoose.Schema(
 );
 
 // Virtual index for optimal query performance
-expenseSchema.index({ date: -1 });
+expenseSchema.index({ user: 1, date: -1 });
 expenseSchema.index({ category: 1 });
 
 const Expense = mongoose.model('Expense', expenseSchema);

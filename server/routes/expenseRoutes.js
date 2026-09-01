@@ -9,6 +9,9 @@ const {
   getSummary,
   seedSampleData
 } = require('../controllers/expenseController');
+const { optionalAuth } = require('../middleware/authMiddleware');
+
+router.use(optionalAuth);
 
 // Summary route (must be before /:id)
 router.get('/summary', getSummary);

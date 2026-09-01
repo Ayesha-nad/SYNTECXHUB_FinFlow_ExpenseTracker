@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const dotenv = require('dotenv');
 const { connectDB } = require('./config/db');
 const expenseRoutes = require('./routes/expenseRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 // Load environment variables
 dotenv.config();
@@ -24,6 +25,7 @@ app.use(express.json());
 app.use(morgan('dev'));
 
 // API Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/expenses', expenseRoutes);
 
 // Health check endpoint
