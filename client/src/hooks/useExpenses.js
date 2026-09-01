@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import expenseApi from '../api/expenseApi';
 
 export const CATEGORIES = [
@@ -31,6 +31,99 @@ export const CATEGORY_BG_COLORS = {
   Other: 'rgba(100, 116, 139, 0.15)'
 };
 
+export const DEFAULT_PKR_EXPENSES = [
+  {
+    _id: 'pkr_seed_1',
+    title: 'Supermarket Monthly Groceries',
+    amount: 19500,
+    category: 'Food',
+    date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(),
+    notes: 'Flour, rice, cooking oil, dairy, snacks',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString()
+  },
+  {
+    _id: 'pkr_seed_2',
+    title: 'Electricity & Utility Bill',
+    amount: 26000,
+    category: 'Bills',
+    date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
+    notes: 'Monthly power and gas utility',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString()
+  },
+  {
+    _id: 'pkr_seed_3',
+    title: 'Car Fuel & Petrol Tank',
+    amount: 10500,
+    category: 'Transport',
+    date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(),
+    notes: 'Full tank unleaded petrol',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString()
+  },
+  {
+    _id: 'pkr_seed_4',
+    title: 'Ergonomic Desk & Office Setup',
+    amount: 32000,
+    category: 'Shopping',
+    date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(),
+    notes: 'Work from home equipment',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString()
+  },
+  {
+    _id: 'pkr_seed_5',
+    title: 'Fiber Optic High-Speed Internet',
+    amount: 4800,
+    category: 'Bills',
+    date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9).toISOString(),
+    notes: 'Unlimited 50 Mbps fiber package',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9).toISOString()
+  },
+  {
+    _id: 'pkr_seed_6',
+    title: 'Gym Membership & Health Checkup',
+    amount: 8500,
+    category: 'Health',
+    date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 12).toISOString(),
+    notes: 'Fitness center fee + vitamins',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 12).toISOString()
+  },
+  {
+    _id: 'pkr_seed_7',
+    title: 'Weekend Family Dinner Buffet',
+    amount: 9400,
+    category: 'Food',
+    date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15).toISOString(),
+    notes: 'Dinner at Continental buffet',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15).toISOString()
+  },
+  {
+    _id: 'pkr_seed_8',
+    title: 'Ride Hailing & Careem Trips',
+    amount: 3600,
+    category: 'Transport',
+    date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 18).toISOString(),
+    notes: 'Weekly city commutes',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 18).toISOString()
+  },
+  {
+    _id: 'pkr_seed_9',
+    title: 'Formal Attire & Footwear',
+    amount: 16500,
+    category: 'Shopping',
+    date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 22).toISOString(),
+    notes: 'New clothing and shoes',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 22).toISOString()
+  },
+  {
+    _id: 'pkr_seed_10',
+    title: 'Cinema IMAX & Entertainment',
+    amount: 4200,
+    category: 'Entertainment',
+    date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 28).toISOString(),
+    notes: 'Weekend 3D movie with snacks',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 28).toISOString()
+  }
+];
+
 const INITIAL_FILTERS = {
   category: 'All',
   search: '',
@@ -40,10 +133,27 @@ const INITIAL_FILTERS = {
   order: 'desc'
 };
 
+const STORAGE_KEY = 'finflow_expenses_pkr_v2';
+
 export const useExpenses = (initialBudget = 150000) => {
-  // --- useState: Core State Variables ---
-  const [expenses, setExpenses] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // --- useState: Core State Variables with instant LocalStorage hydration ---
+  const [expenses, setExpenses] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    // Default PKR fallback
+    return DEFAULT_PKR_EXPENSES;
+  });
+
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [editingExpense, setEditingExpense] = useState(null);
@@ -53,6 +163,15 @@ export const useExpenses = (initialBudget = 150000) => {
     return saved ? Number(saved) : initialBudget;
   });
   const [toasts, setToasts] = useState([]);
+
+  // Auto-sync expenses to LocalStorage whenever state changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
+    } catch (err) {
+      console.warn('LocalStorage save error:', err);
+    }
+  }, [expenses]);
 
   // Sync budget to localStorage
   useEffect(() => {
@@ -72,92 +191,95 @@ export const useExpenses = (initialBudget = 150000) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  // --- useCallback: Memoized fetch function with AbortController ---
+  // --- Background fetch function (Syncs with Express/MongoDB if online) ---
   const fetchExpenses = useCallback(async (signal) => {
-    setLoading(true);
-    setError(null);
     try {
       const response = await expenseApi.getExpenses({}, signal);
-      if (response && response.data) {
+      if (response && response.data && response.data.length > 0) {
         setExpenses(response.data);
       }
     } catch (err) {
       if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
         return;
       }
-      console.error('Error fetching expenses:', err);
-      setError('Could not connect to expense server. Using offline data.');
-      addToast('Offline mode: Could not reach backend server', 'error');
-    } finally {
-      setLoading(false);
+      // On static hosts like GitHub Pages, seamlessly continue in resilient offline mode
+      console.info('FinFlow operating in persistent offline mode (LocalStorage).');
     }
-  }, [addToast]);
+  }, []);
 
-  // --- useEffect: Fetch expenses on mount with AbortController cleanup ---
   useEffect(() => {
     const controller = new AbortController();
     fetchExpenses(controller.signal);
-
     return () => {
       controller.abort();
     };
   }, [fetchExpenses]);
 
-  // --- useCallback: Memoized CRUD Action Handlers ---
+  // --- CRUD Handlers with Guaranteed LocalStorage Persistence ---
 
   // Add Expense
   const handleAddExpense = useCallback(async (expenseData) => {
+    const newId = `exp_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+    const newExpense = {
+      _id: newId,
+      ...expenseData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    // 1. Immediately persist to state & localStorage
+    setExpenses((prev) => {
+      const updated = [newExpense, ...prev];
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch (e) {
+        console.warn(e);
+      }
+      return updated;
+    });
+
+    setLastAddedId(newId);
+    addToast(`Added "${newExpense.title}" (PKR ${Number(newExpense.amount).toLocaleString()})`, 'success');
+
+    setTimeout(() => {
+      setLastAddedId((curr) => (curr === newId ? null : curr));
+    }, 3000);
+
+    // 2. Background attempt to sync with backend API if online
     try {
-      const res = await expenseApi.createExpense(expenseData);
-      const newExpense = res.data;
-
-      setExpenses((prev) => [newExpense, ...prev]);
-      setLastAddedId(newExpense._id);
-      addToast(`Added "${newExpense.title}" (PKR ${Number(newExpense.amount).toLocaleString()})`, 'success');
-
-      setTimeout(() => {
-        setLastAddedId((curr) => (curr === newExpense._id ? null : curr));
-      }, 3000);
-
-      return { success: true, data: newExpense };
-    } catch (err) {
-      console.error('Error adding expense:', err);
-      const fallbackExpense = {
-        _id: `local_${Date.now()}`,
-        ...expenseData,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      setExpenses((prev) => [fallbackExpense, ...prev]);
-      setLastAddedId(fallbackExpense._id);
-      addToast(`Added locally: "${fallbackExpense.title}"`, 'info');
-      return { success: true, data: fallbackExpense };
+      await expenseApi.createExpense(expenseData);
+    } catch {
+      // Already saved in localStorage
     }
+
+    return { success: true, data: newExpense };
   }, [addToast]);
 
-  // Edit/Update Expense
+  // Edit / Update Expense
   const handleUpdateExpense = useCallback(async (id, updateData) => {
-    try {
-      const res = await expenseApi.updateExpense(id, updateData);
-      const updated = res.data;
+    setExpenses((prev) => {
+      const updatedList = prev.map((item) =>
+        item._id === id ? { ...item, ...updateData, updatedAt: new Date().toISOString() } : item
+      );
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+      } catch (e) {
+        console.warn(e);
+      }
+      return updatedList;
+    });
 
-      setExpenses((prev) =>
-        prev.map((item) => (item._id === id ? updated : item))
-      );
-      setEditingExpense(null);
-      addToast(`Updated "${updated.title}"`, 'success');
-      return { success: true };
-    } catch (err) {
-      console.error('Error updating expense:', err);
-      setExpenses((prev) =>
-        prev.map((item) =>
-          item._id === id ? { ...item, ...updateData, updatedAt: new Date().toISOString() } : item
-        )
-      );
-      setEditingExpense(null);
-      addToast('Updated locally', 'info');
-      return { success: true };
+    setEditingExpense(null);
+    addToast(`Updated expense details`, 'success');
+
+    // Background attempt to sync with backend
+    try {
+      await expenseApi.updateExpense(id, updateData);
+    } catch {
+      // Saved locally
     }
+
+    return { success: true };
   }, [addToast]);
 
   // Set active item to edit
@@ -171,14 +293,23 @@ export const useExpenses = (initialBudget = 150000) => {
 
   // Delete Expense
   const handleDeleteExpense = useCallback(async (id) => {
+    setExpenses((prev) => {
+      const updatedList = prev.filter((item) => item._id !== id);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+      } catch (e) {
+        console.warn(e);
+      }
+      return updatedList;
+    });
+
+    addToast('Expense removed', 'info');
+
+    // Background attempt to sync with backend
     try {
       await expenseApi.deleteExpense(id);
-      setExpenses((prev) => prev.filter((item) => item._id !== id));
-      addToast('Expense deleted', 'info');
-    } catch (err) {
-      console.error('Error deleting expense:', err);
-      setExpenses((prev) => prev.filter((item) => item._id !== id));
-      addToast('Deleted locally', 'info');
+    } catch {
+      // Deleted locally
     }
   }, [addToast]);
 
@@ -197,21 +328,20 @@ export const useExpenses = (initialBudget = 150000) => {
 
   // Seed sample expenses handler
   const handleSeedData = useCallback(async () => {
-    setLoading(true);
+    setExpenses(DEFAULT_PKR_EXPENSES);
     try {
-      const res = await expenseApi.seedSampleExpenses();
-      if (res && res.data) {
-        setExpenses(res.data);
-        addToast('Sample PKR financial data loaded successfully!', 'success');
-      }
-    } catch (err) {
-      console.error('Seed failed, generating locally:', err);
-      fetchExpenses();
-      addToast('Refreshed data', 'info');
-    } finally {
-      setLoading(false);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_PKR_EXPENSES));
+    } catch (e) {
+      console.warn(e);
     }
-  }, [addToast, fetchExpenses]);
+    addToast('Sample PKR financial dataset restored!', 'success');
+
+    try {
+      await expenseApi.seedSampleExpenses();
+    } catch {
+      // Loaded locally
+    }
+  }, [addToast]);
 
   // --- useMemo: Derived Filtered & Sorted Expenses List ---
   const filteredExpenses = useMemo(() => {
@@ -224,7 +354,7 @@ export const useExpenses = (initialBudget = 150000) => {
       );
     }
 
-    // Search Query (title or notes)
+    // Search Query
     if (filters.search.trim()) {
       const q = filters.search.toLowerCase().trim();
       result = result.filter(
@@ -389,7 +519,7 @@ export const useExpenses = (initialBudget = 150000) => {
       ]
     };
 
-    // 3. Current Month Cumulative Progress (Line Chart)
+    // 3. Current Month Cumulative Progress
     const daysInCurrentMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
     const dailyLineLabels = [];
     const cumulativeTotals = [];
