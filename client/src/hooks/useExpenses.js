@@ -40,7 +40,7 @@ const INITIAL_FILTERS = {
   order: 'desc'
 };
 
-export const useExpenses = (initialBudget = 1500) => {
+export const useExpenses = (initialBudget = 150000) => {
   // --- useState: Core State Variables ---
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,8 +48,16 @@ export const useExpenses = (initialBudget = 1500) => {
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [editingExpense, setEditingExpense] = useState(null);
   const [lastAddedId, setLastAddedId] = useState(null);
-  const [monthlyBudget, setMonthlyBudget] = useState(initialBudget);
+  const [monthlyBudget, setMonthlyBudget] = useState(() => {
+    const saved = localStorage.getItem('finflow_budget_pkr');
+    return saved ? Number(saved) : initialBudget;
+  });
   const [toasts, setToasts] = useState([]);
+
+  // Sync budget to localStorage
+  useEffect(() => {
+    localStorage.setItem('finflow_budget_pkr', monthlyBudget);
+  }, [monthlyBudget]);
 
   // Toast notification helper
   const addToast = useCallback((message, type = 'success') => {
@@ -75,7 +83,6 @@ export const useExpenses = (initialBudget = 1500) => {
       }
     } catch (err) {
       if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
-        // Request intentionally aborted on unmount/re-fetch
         return;
       }
       console.error('Error fetching expenses:', err);
@@ -92,7 +99,6 @@ export const useExpenses = (initialBudget = 1500) => {
     fetchExpenses(controller.signal);
 
     return () => {
-      // AbortController cleanup to cancel in-flight request if unmounted
       controller.abort();
     };
   }, [fetchExpenses]);
@@ -107,9 +113,8 @@ export const useExpenses = (initialBudget = 1500) => {
 
       setExpenses((prev) => [newExpense, ...prev]);
       setLastAddedId(newExpense._id);
-      addToast(`Added "${newExpense.title}" ($${Number(newExpense.amount).toFixed(2)})`, 'success');
+      addToast(`Added "${newExpense.title}" (PKR ${Number(newExpense.amount).toLocaleString()})`, 'success');
 
-      // Clear highlight after 3 seconds
       setTimeout(() => {
         setLastAddedId((curr) => (curr === newExpense._id ? null : curr));
       }, 3000);
@@ -117,7 +122,6 @@ export const useExpenses = (initialBudget = 1500) => {
       return { success: true, data: newExpense };
     } catch (err) {
       console.error('Error adding expense:', err);
-      // Fallback local addition if network fails
       const fallbackExpense = {
         _id: `local_${Date.now()}`,
         ...expenseData,
@@ -198,11 +202,10 @@ export const useExpenses = (initialBudget = 1500) => {
       const res = await expenseApi.seedSampleExpenses();
       if (res && res.data) {
         setExpenses(res.data);
-        addToast('Sample financial data loaded successfully!', 'success');
+        addToast('Sample PKR financial data loaded successfully!', 'success');
       }
     } catch (err) {
       console.error('Seed failed, generating locally:', err);
-      // Fallback
       fetchExpenses();
       addToast('Refreshed data', 'info');
     } finally {
@@ -317,7 +320,7 @@ export const useExpenses = (initialBudget = 1500) => {
     };
   }, [expenses, monthlyBudget]);
 
-  // --- useMemo: Derived Chart.js Data (Category Donut, 6-Month Bar, Monthly Cumulative Line) ---
+  // --- useMemo: Derived Chart.js Data ---
   const chartData = useMemo(() => {
     // 1. Category Distribution
     const catMap = {};
@@ -376,10 +379,10 @@ export const useExpenses = (initialBudget = 1500) => {
       labels: monthlyLabels,
       datasets: [
         {
-          label: 'Monthly Spending ($)',
+          label: 'Monthly Spending (PKR)',
           data: monthlyTotals,
-          backgroundColor: 'rgba(108, 92, 231, 0.85)',
-          hoverBackgroundColor: '#6C5CE7',
+          backgroundColor: 'rgba(99, 102, 241, 0.85)',
+          hoverBackgroundColor: '#6366F1',
           borderRadius: 8,
           borderSkipped: false
         }
@@ -392,7 +395,6 @@ export const useExpenses = (initialBudget = 1500) => {
     const cumulativeTotals = [];
     let runningSum = 0;
 
-    // Filter items for current month and group by day
     const dayMap = {};
     expenses.forEach((item) => {
       const d = new Date(item.date);
@@ -413,7 +415,7 @@ export const useExpenses = (initialBudget = 1500) => {
       labels: dailyLineLabels.length > 0 ? dailyLineLabels : ['Day 1'],
       datasets: [
         {
-          label: 'Cumulative Spent ($)',
+          label: 'Cumulative Spent (PKR)',
           data: cumulativeTotals.length > 0 ? cumulativeTotals : [0],
           borderColor: '#10B981',
           backgroundColor: 'rgba(16, 185, 129, 0.12)',

@@ -38,20 +38,19 @@ const ChartPanel = ({ chartData, summaryMetrics, monthlyBudget }) => {
   const { donutData, barData, lineData, catMap = {} } = chartData;
   const { totalSpent = 0, thisMonthSpent = 0, budgetPercent = 0, isOverBudget = false } = summaryMetrics;
 
-  // Chart.js Shared Animation Options
   const defaultAnimation = {
     duration: 800,
     easing: 'easeOutQuart',
   };
 
-  // 1. Donut Options (Custom sleek layout with external interactive category chips)
+  // 1. Donut Options in PKR
   const donutOptions = {
     responsive: true,
     maintainAspectRatio: false,
     animation: defaultAnimation,
     plugins: {
       legend: {
-        display: false, // We use a custom, non-cutoff, interactive grid below
+        display: false,
       },
       tooltip: {
         backgroundColor: '#0F172A',
@@ -64,7 +63,7 @@ const ChartPanel = ({ chartData, summaryMetrics, monthlyBudget }) => {
             const label = context.label || '';
             const value = Number(context.raw) || 0;
             const pct = totalSpent > 0 ? ((value / totalSpent) * 100).toFixed(1) : 0;
-            return ` ${label}: $${value.toFixed(2)} (${pct}%)`;
+            return ` ${label}: PKR ${value.toLocaleString()} (${pct}%)`;
           },
         },
       },
@@ -72,7 +71,7 @@ const ChartPanel = ({ chartData, summaryMetrics, monthlyBudget }) => {
     cutout: '76%',
   };
 
-  // 2. Bar Options
+  // 2. Bar Options in PKR
   const barOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -88,7 +87,7 @@ const ChartPanel = ({ chartData, summaryMetrics, monthlyBudget }) => {
         padding: 12,
         cornerRadius: 10,
         callbacks: {
-          label: (context) => ` Spending: $${Number(context.raw).toFixed(2)}`,
+          label: (context) => ` Spending: PKR ${Number(context.raw).toLocaleString()}`,
         },
       },
     },
@@ -100,7 +99,7 @@ const ChartPanel = ({ chartData, summaryMetrics, monthlyBudget }) => {
       y: {
         grid: { color: 'rgba(226, 232, 240, 0.4)' },
         ticks: {
-          callback: (value) => `$${value}`,
+          callback: (value) => value >= 1000 ? `Rs. ${value / 1000}k` : `Rs. ${value}`,
           font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' },
           color: '#94A3B8',
         },
@@ -108,7 +107,7 @@ const ChartPanel = ({ chartData, summaryMetrics, monthlyBudget }) => {
     },
   };
 
-  // 3. Line Options
+  // 3. Line Options in PKR
   const lineOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -131,7 +130,7 @@ const ChartPanel = ({ chartData, summaryMetrics, monthlyBudget }) => {
         padding: 12,
         cornerRadius: 10,
         callbacks: {
-          label: (context) => ` Total to Date: $${Number(context.raw).toFixed(2)}`,
+          label: (context) => ` Total to Date: PKR ${Number(context.raw).toLocaleString()}`,
         },
       },
     },
@@ -143,7 +142,7 @@ const ChartPanel = ({ chartData, summaryMetrics, monthlyBudget }) => {
       y: {
         grid: { color: 'rgba(226, 232, 240, 0.4)' },
         ticks: {
-          callback: (value) => `$${value}`,
+          callback: (value) => value >= 1000 ? `Rs. ${value / 1000}k` : `Rs. ${value}`,
           font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' },
           color: '#94A3B8',
         },
@@ -164,7 +163,7 @@ const ChartPanel = ({ chartData, summaryMetrics, monthlyBudget }) => {
       </div>
 
       <div className="card-body" style={{ padding: '1.25rem' }}>
-        {/* Navigation Tabs with Smooth Animation */}
+        {/* Navigation Tabs */}
         <div className="chart-tabs" style={{ marginBottom: '1rem', paddingBottom: '0.65rem' }}>
           <button
             type="button"
@@ -189,7 +188,7 @@ const ChartPanel = ({ chartData, summaryMetrics, monthlyBudget }) => {
           </button>
         </div>
 
-        {/* Dynamic Canvas Container with Perfect Viewport Fit */}
+        {/* Dynamic Canvas Container */}
         <div className="chart-canvas-container" style={{ height: activeTab === 'donut' ? '210px' : '230px' }}>
           {activeTab === 'donut' && (
             <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -209,14 +208,14 @@ const ChartPanel = ({ chartData, summaryMetrics, monthlyBudget }) => {
                 </div>
                 <div
                   style={{
-                    fontSize: '1.35rem',
+                    fontSize: '1.25rem',
                     fontWeight: 800,
                     color: 'var(--text-primary)',
                     fontFamily: 'var(--font-mono)',
                     lineHeight: 1.1,
                   }}
                 >
-                  <AnimatedCounter prefix="$" value={totalSpent} decimals={2} />
+                  <AnimatedCounter prefix="PKR " value={totalSpent} decimals={0} />
                 </div>
               </div>
             </div>
@@ -227,9 +226,10 @@ const ChartPanel = ({ chartData, summaryMetrics, monthlyBudget }) => {
           {activeTab === 'line' && <Line data={lineData} options={lineOptions} />}
         </div>
 
-        {/* Interactive Custom Category Chips Grid (Never gets cut off) */}
+        {/* Category Chips Grid */}
         {activeTab === 'donut' && (
           <div
+            className="chart-category-grid"
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
@@ -290,7 +290,7 @@ const ChartPanel = ({ chartData, summaryMetrics, monthlyBudget }) => {
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
                     <span style={{ fontSize: '0.75rem', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>
-                      ${amount.toFixed(0)}
+                      {amount >= 1000 ? `${(amount / 1000).toFixed(0)}k` : amount.toFixed(0)}
                     </span>
                     <span
                       style={{
@@ -347,7 +347,7 @@ const ChartPanel = ({ chartData, summaryMetrics, monthlyBudget }) => {
                 : 'Pacing Within Budget'}
             </strong>
             <span style={{ color: 'var(--text-secondary)', marginLeft: '0.4rem' }}>
-              {budgetPercent}% used of ${monthlyBudget.toFixed(2)}
+              {budgetPercent}% used of PKR {Number(monthlyBudget).toLocaleString()}
             </span>
           </div>
         </div>

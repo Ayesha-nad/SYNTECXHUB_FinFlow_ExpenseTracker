@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Target, DollarSign, Check } from 'lucide-react';
+import { X, Target, Wallet, Check } from 'lucide-react';
 
 const BudgetModal = ({ isOpen, onClose, currentBudget, onSaveBudget }) => {
   const [budgetInput, setBudgetInput] = useState(String(currentBudget));
@@ -25,6 +25,8 @@ const BudgetModal = ({ isOpen, onClose, currentBudget, onSaveBudget }) => {
     }
   };
 
+  const pkrPresets = [50000, 100000, 150000, 200000, 300000];
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -40,48 +42,52 @@ const BudgetModal = ({ isOpen, onClose, currentBudget, onSaveBudget }) => {
 
         <form onSubmit={handleSubmit} style={{ padding: '1.5rem' }}>
           <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
-            Set your target spending budget for the current month. The dashboard summary cards, gauge, and charts will dynamically adapt in real-time.
+            Set your target spending budget in PKR for the current month. The dashboard summary cards, health gauge, and velocity charts will dynamically adapt.
           </p>
 
           <div className="form-group">
             <label className="form-label" htmlFor="budget-input">
-              Monthly Budget Target ($)
+              Monthly Budget Target (PKR)
             </label>
             <div style={{ position: 'relative' }}>
-              <DollarSign
-                size={18}
+              <span
                 style={{
                   position: 'absolute',
                   left: '12px',
                   top: '50%',
                   transform: 'translateY(-50%)',
                   color: 'var(--text-muted)',
+                  fontSize: '0.85rem',
+                  fontWeight: 800,
+                  fontFamily: 'var(--font-mono)',
                 }}
-              />
+              >
+                PKR
+              </span>
               <input
                 id="budget-input"
                 ref={inputRef}
                 type="number"
-                step="50"
-                min="10"
+                step="1000"
+                min="1000"
                 className="form-input"
-                style={{ paddingLeft: '2.2rem', fontSize: '1.1rem', fontWeight: 600 }}
+                style={{ paddingLeft: '3.4rem', fontSize: '1.1rem', fontWeight: 700 }}
                 value={budgetInput}
                 onChange={(e) => setBudgetInput(e.target.value)}
               />
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
-            {[500, 1000, 1500, 2500, 5000].map((preset) => (
+          <div style={{ display: 'flex', gap: '0.45rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+            {pkrPresets.map((preset) => (
               <button
                 key={preset}
                 type="button"
                 className="nav-btn"
-                style={{ flex: 1, padding: '0.4rem 0.2rem', fontSize: '0.78rem', justifyContent: 'center' }}
+                style={{ flex: 1, minWidth: '70px', padding: '0.45rem 0.3rem', fontSize: '0.78rem', justifyContent: 'center' }}
                 onClick={() => setBudgetInput(String(preset))}
               >
-                ${preset}
+                {preset >= 100000 ? `${preset / 100000} Lakh` : `${preset / 1000}k`}
               </button>
             ))}
           </div>

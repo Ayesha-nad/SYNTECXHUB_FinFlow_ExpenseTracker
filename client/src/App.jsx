@@ -42,7 +42,7 @@ function App() {
   // Mobile add expense modal state
   const [isMobileFormOpen, setIsMobileFormOpen] = useState(false);
 
-  // Initialize custom hook
+  // Initialize custom hook with default PKR 150,000 budget
   const {
     expenses,
     filteredExpenses,
@@ -67,7 +67,7 @@ function App() {
     handleRefresh,
     removeToast,
     addToast,
-  } = useExpenses(1500);
+  } = useExpenses(150000);
 
   // Sync theme with DOM attribute
   useEffect(() => {
@@ -122,14 +122,14 @@ function App() {
     }
   }, [handleSeedData, currentAccent]);
 
-  // Export CSV Handler
+  // Export CSV Handler in PKR
   const handleExportCSV = useCallback(() => {
     if (expenses.length === 0) {
       addToast('No expenses available to export', 'info');
       return;
     }
 
-    const headers = ['Title', 'Amount', 'Category', 'Date', 'Notes'];
+    const headers = ['Title', 'Amount (PKR)', 'Category', 'Date', 'Notes'];
     const rows = expenses.map((e) => [
       `"${(e.title || '').replace(/"/g, '""')}"`,
       e.amount,
@@ -145,12 +145,12 @@ function App() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `expenses_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `finflow_expenses_pkr_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    addToast('CSV export downloaded successfully', 'success');
+    addToast('PKR Expenses CSV downloaded successfully', 'success');
   }, [expenses, addToast]);
 
   // Wrapped edit starter
@@ -186,7 +186,7 @@ function App() {
         {error && (
           <div
             style={{
-              padding: '0.9rem 1.35rem',
+              padding: '0.85rem 1.25rem',
               borderRadius: 'var(--radius-sm)',
               background: 'rgba(239, 68, 68, 0.12)',
               border: '1px solid rgba(239, 68, 68, 0.35)',
@@ -195,7 +195,7 @@ function App() {
               alignItems: 'center',
               justifyContent: 'space-between',
               marginBottom: '1.5rem',
-              fontSize: '0.88rem',
+              fontSize: '0.85rem',
               backdropFilter: 'blur(10px)',
             }}
           >
@@ -207,9 +207,9 @@ function App() {
               type="button"
               className="nav-btn"
               onClick={handleRefresh}
-              style={{ fontSize: '0.8rem', padding: '0.35rem 0.75rem' }}
+              style={{ fontSize: '0.78rem', padding: '0.3rem 0.65rem' }}
             >
-              Retry Connection
+              Retry
             </button>
           </div>
         )}
@@ -296,7 +296,7 @@ function App() {
           >
             <div className="card-header">
               <div className="card-title">
-                <Sparkles size={20} style={{ color: 'var(--color-primary)' }} />
+                <Sparkles size={18} style={{ color: 'var(--color-primary)' }} />
                 <span>{editingExpense ? 'Edit Expense' : 'Quick Add Expense'}</span>
               </div>
               <button
@@ -338,7 +338,7 @@ function App() {
         currentBudget={monthlyBudget}
         onSaveBudget={(newVal) => {
           setMonthlyBudget(newVal);
-          addToast(`Monthly budget set to $${newVal.toFixed(2)}`, 'success');
+          addToast(`Monthly budget set to PKR ${newVal.toLocaleString()}`, 'success');
           try {
             confetti({
               particleCount: 40,
@@ -357,15 +357,15 @@ function App() {
         {toasts.map((toast) => (
           <div key={toast.id} className={`toast toast-${toast.type}`}>
             {toast.type === 'success' && (
-              <CheckCircle2 size={20} style={{ color: 'var(--color-success)', flexShrink: 0 }} />
+              <CheckCircle2 size={18} style={{ color: 'var(--color-success)', flexShrink: 0 }} />
             )}
             {toast.type === 'error' && (
-              <AlertCircle size={20} style={{ color: 'var(--color-danger)', flexShrink: 0 }} />
+              <AlertCircle size={18} style={{ color: 'var(--color-danger)', flexShrink: 0 }} />
             )}
             {toast.type === 'info' && (
-              <Info size={20} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
+              <Info size={18} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
             )}
-            <span style={{ fontSize: '0.88rem', fontWeight: 600, flex: 1 }}>{toast.message}</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, flex: 1 }}>{toast.message}</span>
             <button
               type="button"
               onClick={() => removeToast(toast.id)}

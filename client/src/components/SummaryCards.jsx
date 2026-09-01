@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { DollarSign, Calendar, TrendingUp, PieChart, ShieldAlert, Sparkles, SlidersHorizontal, ArrowUpRight } from 'lucide-react';
+import { Wallet, Calendar, TrendingUp, PieChart, ShieldAlert, Sparkles, SlidersHorizontal, ArrowUpRight } from 'lucide-react';
 import { CATEGORY_COLORS } from '../hooks/useExpenses';
 import AnimatedCounter from './AnimatedCounter';
 
@@ -15,13 +15,11 @@ const SummaryCards = ({ summaryMetrics, monthlyBudget, onOpenBudgetModal }) => {
     isOverBudget = false,
   } = summaryMetrics || {};
 
-  // Formatter for USD
+  // Formatter for PKR
   const formatMoney = (val) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 2,
-    }).format(val || 0);
+    return `PKR ${Number(val || 0).toLocaleString('en-PK', {
+      maximumFractionDigits: 0,
+    })}`;
   };
 
   // Determine progress bar color based on percentage threshold
@@ -43,11 +41,11 @@ const SummaryCards = ({ summaryMetrics, monthlyBudget, onOpenBudgetModal }) => {
             className="summary-card-icon"
             style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}
           >
-            <DollarSign size={22} />
+            <Wallet size={20} />
           </div>
         </div>
         <div className="summary-card-value">
-          <AnimatedCounter prefix="$" value={totalSpent} decimals={2} />
+          <AnimatedCounter prefix="PKR " value={totalSpent} decimals={0} />
         </div>
         <div className="summary-card-subtext">
           <Sparkles size={15} style={{ color: 'var(--color-primary)' }} />
@@ -63,11 +61,11 @@ const SummaryCards = ({ summaryMetrics, monthlyBudget, onOpenBudgetModal }) => {
             className="summary-card-icon"
             style={{ background: 'rgba(59, 130, 246, 0.14)', color: '#3B82F6' }}
           >
-            <Calendar size={22} />
+            <Calendar size={20} />
           </div>
         </div>
         <div className="summary-card-value">
-          <AnimatedCounter prefix="$" value={thisMonthSpent} decimals={2} />
+          <AnimatedCounter prefix="PKR " value={thisMonthSpent} decimals={0} />
         </div>
         <div className="summary-card-subtext">
           <ArrowUpRight size={15} style={{ color: '#3B82F6' }} />
@@ -83,7 +81,7 @@ const SummaryCards = ({ summaryMetrics, monthlyBudget, onOpenBudgetModal }) => {
             className="summary-card-icon"
             style={{ background: 'rgba(236, 72, 153, 0.14)', color: '#EC4899' }}
           >
-            <PieChart size={22} />
+            <PieChart size={20} />
           </div>
         </div>
         <div className="summary-card-value" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
@@ -91,8 +89,8 @@ const SummaryCards = ({ summaryMetrics, monthlyBudget, onOpenBudgetModal }) => {
             <span
               className={`category-pill cat-${topCategory.category}`}
               style={{
-                fontSize: '1.05rem',
-                padding: '0.35rem 0.95rem',
+                fontSize: '0.98rem',
+                padding: '0.35rem 0.85rem',
                 border: `1.5px solid ${CATEGORY_COLORS[topCategory.category] || 'var(--border-color)'}`,
                 boxShadow: `0 4px 14px ${CATEGORY_COLORS[topCategory.category]}33`,
               }}
@@ -100,7 +98,7 @@ const SummaryCards = ({ summaryMetrics, monthlyBudget, onOpenBudgetModal }) => {
               {topCategory.category}
             </span>
           ) : (
-            <span style={{ color: 'var(--text-muted)', fontSize: '1.25rem' }}>No data yet</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: '1.15rem' }}>No data yet</span>
           )}
         </div>
         <div className="summary-card-subtext">
@@ -144,14 +142,14 @@ const SummaryCards = ({ summaryMetrics, monthlyBudget, onOpenBudgetModal }) => {
               color: isOverBudget ? '#EF4444' : '#10B981',
             }}
           >
-            {isOverBudget ? <ShieldAlert size={22} /> : <TrendingUp size={22} />}
+            {isOverBudget ? <ShieldAlert size={20} /> : <TrendingUp size={20} />}
           </div>
         </div>
         <div className="summary-card-value" style={{ color: isOverBudget ? '#EF4444' : 'var(--text-primary)' }}>
           {isOverBudget ? (
-            <span>-$<AnimatedCounter value={thisMonthSpent - monthlyBudget} decimals={2} /></span>
+            <span>-PKR <AnimatedCounter value={thisMonthSpent - monthlyBudget} decimals={0} /></span>
           ) : (
-            <AnimatedCounter prefix="$" value={remainingBudget} decimals={2} />
+            <AnimatedCounter prefix="PKR " value={remainingBudget} decimals={0} />
           )}
         </div>
         <div className="budget-progress-track">

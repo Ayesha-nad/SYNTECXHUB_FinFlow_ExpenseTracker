@@ -18,19 +18,19 @@ import { CATEGORY_COLORS, CATEGORY_BG_COLORS } from '../hooks/useExpenses';
 const getCategoryIcon = (category) => {
   switch (category) {
     case 'Food':
-      return <Utensils size={20} />;
+      return <Utensils size={18} />;
     case 'Transport':
-      return <Car size={20} />;
+      return <Car size={18} />;
     case 'Shopping':
-      return <ShoppingBag size={20} />;
+      return <ShoppingBag size={18} />;
     case 'Bills':
-      return <Receipt size={20} />;
+      return <Receipt size={18} />;
     case 'Entertainment':
-      return <Film size={20} />;
+      return <Film size={18} />;
     case 'Health':
-      return <HeartPulse size={20} />;
+      return <HeartPulse size={18} />;
     default:
-      return <Tag size={20} />;
+      return <Tag size={18} />;
   }
 };
 
@@ -42,16 +42,15 @@ const ExpenseItem = ({
 }) => {
   const { _id, title, amount, category, date, notes } = expense;
 
-  const formattedDate = new Date(date).toLocaleDateString('en-US', {
+  const formattedDate = new Date(date).toLocaleDateString('en-PK', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   });
 
-  const formattedAmount = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount || 0);
+  const formattedAmount = `PKR ${Number(amount || 0).toLocaleString('en-PK', {
+    maximumFractionDigits: 0,
+  })}`;
 
   const categoryColor = CATEGORY_COLORS[category] || '#64748B';
   const categoryBg = CATEGORY_BG_COLORS[category] || 'rgba(100, 116, 139, 0.15)';
@@ -107,10 +106,10 @@ const ExpenseItem = ({
       </div>
 
       <div className="expense-item-right">
-        {/* Amount */}
+        {/* Amount in PKR */}
         <div className="expense-amount">{formattedAmount}</div>
 
-        {/* Hover Action Buttons */}
+        {/* Action Buttons */}
         <div className="expense-actions">
           <button
             type="button"
@@ -134,5 +133,4 @@ const ExpenseItem = ({
   );
 };
 
-// Wrapped in React.memo to prevent unnecessary re-renders when other list items update
 export default memo(ExpenseItem);

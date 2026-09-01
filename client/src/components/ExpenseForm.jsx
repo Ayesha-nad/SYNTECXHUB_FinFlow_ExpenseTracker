@@ -21,9 +21,7 @@ const ExpenseForm = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [shake, setShake] = useState(false);
 
-  // --- useRef: Auto-focus & Rapid-fire Entry ---
-  // 1. Ref on the "title" input so the form auto-focuses on mount
-  // 2. Refocuses immediately after submit for rapid-fire mouse-free entry
+  // Ref on the "title" input so the form auto-focuses on mount & after submit
   const titleInputRef = useRef(null);
   const formRef = useRef(null);
 
@@ -73,7 +71,7 @@ const ExpenseForm = ({
     }
 
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-      newErrors.amount = 'Please enter a valid amount greater than $0';
+      newErrors.amount = 'Please enter a valid amount greater than PKR 0';
     }
 
     if (!category) {
@@ -93,7 +91,6 @@ const ExpenseForm = ({
     e.preventDefault();
 
     if (!validateForm()) {
-      // Trigger shake animation on invalid submission
       setShake(true);
       setTimeout(() => setShake(false), 500);
       return;
@@ -115,16 +112,16 @@ const ExpenseForm = ({
       } else {
         await onAddExpense(expensePayload);
 
-        // Visual celebratory confetti pop
+        // Celebratory confetti pop
         try {
           confetti({
             particleCount: 35,
             spread: 50,
             origin: { y: 0.8 },
-            colors: ['#6C5CE7', '#10B981', '#F59E0B'],
+            colors: ['#6366F1', '#10B981', '#F59E0B'],
           });
         } catch {
-          // ignore if canvas unavailable
+          // ignore
         }
 
         // Reset input fields
@@ -133,7 +130,7 @@ const ExpenseForm = ({
         setNotes('');
         setErrors({});
 
-        // --- Rapid-fire entry: Auto-refocus title input via useRef ---
+        // Auto-refocus title input for rapid mouse-free entry
         setTimeout(() => {
           if (titleInputRef.current) {
             titleInputRef.current.focus();
@@ -153,20 +150,20 @@ const ExpenseForm = ({
         <div className="card-title">
           {editingExpense ? (
             <>
-              <Edit3 size={20} style={{ color: 'var(--color-primary)' }} />
+              <Edit3 size={18} style={{ color: 'var(--color-primary)' }} />
               <span>Edit Expense</span>
             </>
           ) : (
             <>
-              <PlusCircle size={20} style={{ color: 'var(--color-primary)' }} />
+              <PlusCircle size={18} style={{ color: 'var(--color-primary)' }} />
               <span>Add New Expense</span>
             </>
           )}
         </div>
 
         {!editingExpense && (
-          <span className="rapid-fire-badge" title="Rapid-fire mode active: submit and keep typing without mouse">
-            <Zap size={12} /> Rapid-Fire Ready
+          <span className="rapid-fire-badge" title="Rapid-fire mode: submit and keep typing without mouse">
+            <Zap size={11} /> Rapid Entry
           </span>
         )}
 
@@ -184,7 +181,7 @@ const ExpenseForm = ({
 
       <div className="card-body">
         <form onSubmit={handleSubmit} noValidate>
-          {/* Title Input (with useRef) */}
+          {/* Title Input */}
           <div className="form-group">
             <label className="form-label" htmlFor="expense-title">
               Expense Title <span style={{ color: 'var(--color-danger)' }}>*</span>
@@ -194,7 +191,7 @@ const ExpenseForm = ({
               ref={titleInputRef}
               type="text"
               className={`form-input ${errors.title ? 'error' : ''}`}
-              placeholder="e.g. Grocery shopping, Uber ride, Netflix..."
+              placeholder="e.g. Monthly groceries, Fuel petrol, Internet bill..."
               value={title}
               onChange={(e) => {
                 setTitle(e.target.value);
@@ -213,15 +210,15 @@ const ExpenseForm = ({
           <div className="form-grid-2">
             <div className="form-group">
               <label className="form-label" htmlFor="expense-amount">
-                Amount ($) <span style={{ color: 'var(--color-danger)' }}>*</span>
+                Amount (PKR) <span style={{ color: 'var(--color-danger)' }}>*</span>
               </label>
               <input
                 id="expense-amount"
                 type="number"
-                step="0.01"
-                min="0.01"
+                step="any"
+                min="1"
                 className={`form-input ${errors.amount ? 'error' : ''}`}
-                placeholder="0.00"
+                placeholder="e.g. 3500"
                 value={amount}
                 onChange={(e) => {
                   setAmount(e.target.value);
@@ -291,7 +288,7 @@ const ExpenseForm = ({
                 id="expense-notes"
                 type="text"
                 className="form-input"
-                placeholder="Details, receipt link, tags..."
+                placeholder="Details, store name, tags..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 disabled={isSubmitting}
@@ -309,11 +306,11 @@ const ExpenseForm = ({
             >
               {editingExpense ? (
                 <>
-                  <Edit3 size={18} /> Update Expense
+                  <Edit3 size={17} /> Update Expense
                 </>
               ) : (
                 <>
-                  <PlusCircle size={18} /> Save & Enter Next
+                  <PlusCircle size={17} /> Save & Enter Next
                 </>
               )}
             </button>

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, memo } from 'react';
-import { Sparkles, TrendingUp, ShieldCheck, Activity, Zap, Layers, DollarSign } from 'lucide-react';
+import { Sparkles, TrendingUp, ShieldCheck, Activity, Zap, Layers } from 'lucide-react';
 import AnimatedCounter from './AnimatedCounter';
 
 const FintechHeroBanner = ({ summaryMetrics, monthlyBudget }) => {
@@ -56,8 +56,8 @@ const FintechHeroBanner = ({ summaryMetrics, monthlyBudget }) => {
         y: Math.random() * height,
         vx: (Math.random() - 0.5) * 0.85,
         vy: (Math.random() - 0.5) * 0.85,
-        radius: Math.random() * 3.5 + 3, // 3px to 6.5px
-        opacity: Math.random() * 0.4 + 0.6, // 0.6 - 1.0
+        radius: Math.random() * 3.5 + 3,
+        opacity: Math.random() * 0.4 + 0.6,
         color: ['#818CF8', '#34D399', '#38BDF8', '#F472B6', '#FBBF24'][i % 5],
         pulseSpeed: 0.03 + Math.random() * 0.04,
         pulseVal: Math.random() * Math.PI,
@@ -145,7 +145,6 @@ const FintechHeroBanner = ({ summaryMetrics, monthlyBudget }) => {
     };
   }, []);
 
-  // Calculate health circle stroke dash
   const radius = 38;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (healthScore / 100) * circumference;
@@ -178,7 +177,7 @@ const FintechHeroBanner = ({ summaryMetrics, monthlyBudget }) => {
           </div>
           <div className="hero-pill">
             <Zap size={15} style={{ color: '#F59E0B' }} />
-            <span>Active Goal: <strong>${monthlyBudget}</strong></span>
+            <span>Active Goal: <strong>PKR {Number(monthlyBudget || 0).toLocaleString()}</strong></span>
           </div>
           <div className="hero-pill">
             <ShieldCheck size={15} style={{ color: '#818CF8' }} />

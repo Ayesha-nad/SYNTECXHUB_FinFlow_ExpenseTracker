@@ -1,85 +1,85 @@
 const { Expense, CATEGORIES } = require('../models/Expense');
 const { getIsConnected } = require('../config/db');
 
-// In-memory / local fallback store for seamless zero-config fallback
+// In-memory / local fallback store with realistic PKR amounts
 let fallbackExpenses = [
   {
     _id: 'exp_1',
-    title: 'Whole Foods Groceries',
-    amount: 128.50,
+    title: 'Supermarket Monthly Groceries',
+    amount: 18500,
     category: 'Food',
     date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(),
-    notes: 'Organic vegetables, almond milk, coffee beans',
+    notes: 'Cooking oil, basmati rice, spices, milk, and household items',
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(),
     updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString()
   },
   {
     _id: 'exp_2',
-    title: 'Metro Monthly Pass',
-    amount: 85.00,
-    category: 'Transport',
+    title: 'Electricity & Utility Bill',
+    amount: 24500,
+    category: 'Bills',
     date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
-    notes: 'Subway & bus card recharge',
+    notes: 'LESCO electricity and gas monthly billing',
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
     updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString()
   },
   {
     _id: 'exp_3',
-    title: 'Electricity & Fiber Internet',
-    amount: 142.75,
-    category: 'Bills',
+    title: 'Car Fuel & Petrol Tank',
+    amount: 9500,
+    category: 'Transport',
     date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
-    notes: 'Utility bill for current month',
+    notes: 'Full tank fuel at PSO pump',
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
     updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString()
   },
   {
     _id: 'exp_4',
-    title: 'Mechanical Keyboard',
-    amount: 119.99,
-    category: 'Shopping',
+    title: 'High-speed Fiber Optic Internet',
+    amount: 4500,
+    category: 'Bills',
     date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 8).toISOString(),
-    notes: 'Wireless RGB mechanical keyboard for desk',
+    notes: 'Monthly 50 Mbps unlimited fiber connection',
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 8).toISOString(),
     updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 8).toISOString()
   },
   {
     _id: 'exp_5',
-    title: 'Cinema IMAX & Popcorn',
-    amount: 45.00,
-    category: 'Entertainment',
+    title: 'Family Dinner at Restaurant',
+    amount: 7200,
+    category: 'Food',
     date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(),
-    notes: 'Sci-fi movie with friends',
+    notes: 'Weekend barbecue and dessert with family',
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(),
     updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString()
   },
   {
     _id: 'exp_6',
-    title: 'Dental Checkup & Vitamins',
-    amount: 95.00,
-    category: 'Health',
+    title: 'Clothing & Footwear Shopping',
+    amount: 14800,
+    category: 'Shopping',
     date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14).toISOString(),
-    notes: 'Routine dental cleaning and multivitamins',
+    notes: 'Seasonal clothes and formal shoes from mall',
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14).toISOString(),
     updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14).toISOString()
   },
   {
     _id: 'exp_7',
-    title: 'Artisan Coffee Roasters',
-    amount: 24.50,
-    category: 'Food',
+    title: 'Gym Membership & Fitness',
+    amount: 5500,
+    category: 'Health',
     date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 18).toISOString(),
-    notes: 'Pour-over and pastries',
+    notes: 'Monthly fitness club fee and protein',
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 18).toISOString(),
     updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 18).toISOString()
   },
   {
     _id: 'exp_8',
-    title: 'Cloud Storage Subscription',
-    amount: 9.99,
-    category: 'Bills',
+    title: 'Cinema IMAX Tickets & Snacks',
+    amount: 3200,
+    category: 'Entertainment',
     date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 25).toISOString(),
-    notes: 'Monthly 2TB cloud backup',
+    notes: 'Weekend movie with popcorn',
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 25).toISOString(),
     updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 25).toISOString()
   }
@@ -502,22 +502,22 @@ const getSummary = async (req, res) => {
 };
 
 /**
- * @desc Reset / Seed sample expenses
+ * @desc Reset / Seed sample expenses in PKR
  * @route POST /api/expenses/seed
  */
 const seedSampleData = async (req, res) => {
   try {
     const sampleItems = [
-      { title: 'Whole Foods Groceries', amount: 135.20, category: 'Food', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1), notes: 'Fresh berries, salmon, olive oil' },
-      { title: 'Subway Monthly Pass', amount: 90.00, category: 'Transport', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), notes: 'City transit card' },
-      { title: 'Electric & Heating Bill', amount: 165.40, category: 'Bills', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4), notes: 'Monthly power utility' },
-      { title: 'Ergonomic Desk Chair', amount: 249.00, category: 'Shopping', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6), notes: 'Lumbar support office chair' },
-      { title: 'Spotify & Netflix Subscriptions', amount: 26.98, category: 'Entertainment', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9), notes: 'Digital streaming services' },
-      { title: 'Gym Membership & Whey Protein', amount: 88.50, category: 'Health', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 12), notes: 'Fitness center access + supplements' },
-      { title: 'Dinner at Bistro Italian', amount: 74.30, category: 'Food', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15), notes: 'Pasta dinner with colleagues' },
-      { title: 'Gasoline Fill-Up', amount: 52.00, category: 'Transport', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 18), notes: 'Full tank unleaded' },
-      { title: 'Sneakers & Athletic Wear', amount: 110.00, category: 'Shopping', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 22), notes: 'Running shoes on sale' },
-      { title: 'High-speed Fiber Internet', amount: 65.00, category: 'Bills', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 28), notes: 'Gigabit fiber line' }
+      { title: 'Supermarket Monthly Groceries', amount: 19500, category: 'Food', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1), notes: 'Flour, rice, cooking oil, dairy, snacks' },
+      { title: 'Electricity & Utility Bill', amount: 26000, category: 'Bills', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), notes: 'Monthly power and gas utility' },
+      { title: 'Car Fuel & Petrol Tank', amount: 10500, category: 'Transport', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4), notes: 'Full tank unleaded petrol' },
+      { title: 'Ergonomic Desk & Office Setup', amount: 32000, category: 'Shopping', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6), notes: 'Work from home equipment' },
+      { title: 'Fiber Optic High-Speed Internet', amount: 4800, category: 'Bills', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9), notes: 'Unlimited fiber package' },
+      { title: 'Gym Membership & Health Checkup', amount: 8500, category: 'Health', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 12), notes: 'Fitness center fee + supplements' },
+      { title: 'Weekend Family Dinner Buffet', amount: 9400, category: 'Food', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15), notes: 'Dinner at Continental buffet' },
+      { title: 'Ride Hailing & Careem Trips', amount: 3600, category: 'Transport', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 18), notes: 'Weekly city commutes' },
+      { title: 'Formal Attire & Footwear', amount: 16500, category: 'Shopping', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 22), notes: 'New clothing and shoes' },
+      { title: 'Cinema IMAX & Entertainment', amount: 4200, category: 'Entertainment', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 28), notes: 'Weekend 3D movie with snacks' }
     ];
 
     if (getIsConnected()) {
