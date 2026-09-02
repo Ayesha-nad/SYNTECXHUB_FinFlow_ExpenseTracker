@@ -82,9 +82,13 @@ const ExpenseItem = ({
 
         {/* Details */}
         <div className="expense-details">
-          <div className="expense-title" title={title}>
-            {title}
+          <div className="expense-title-row">
+            <span className="expense-title" title={title}>
+              {title}
+            </span>
+            <span className="expense-amount-mobile">{formattedAmount}</span>
           </div>
+
           <div className="expense-meta">
             <span
               className={`category-pill cat-${category}`}
@@ -96,6 +100,7 @@ const ExpenseItem = ({
               <Calendar size={12} /> {formattedDate}
             </span>
           </div>
+
           {notes && (
             <div className="expense-notes" title={notes}>
               <FileText size={11} style={{ display: 'inline', marginRight: '3px' }} />
@@ -106,8 +111,8 @@ const ExpenseItem = ({
       </div>
 
       <div className="expense-item-right">
-        {/* Amount in PKR */}
-        <div className="expense-amount">{formattedAmount}</div>
+        {/* Amount in PKR (Desktop) */}
+        <div className="expense-amount expense-amount-desktop">{formattedAmount}</div>
 
         {/* Action Buttons */}
         <div className="expense-actions">

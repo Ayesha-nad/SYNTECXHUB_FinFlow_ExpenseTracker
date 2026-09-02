@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Search, Filter, ArrowUpDown, X, Calendar, RotateCcw } from 'lucide-react';
+import { Search, ArrowUpDown, X, Calendar, RotateCcw } from 'lucide-react';
 import { CATEGORIES } from '../hooks/useExpenses';
 
 const ExpenseFilters = ({
@@ -21,7 +21,7 @@ const ExpenseFilters = ({
 
   return (
     <div className="filter-bar">
-      {/* Category Chips Bar */}
+      {/* Category Chips Horizontal Swipe Bar */}
       <div className="filter-chips-wrapper">
         <button
           type="button"
@@ -55,7 +55,7 @@ const ExpenseFilters = ({
         })}
       </div>
 
-      {/* Search and Dropdowns Row */}
+      {/* Search and Responsive Controls Grid */}
       <div className="filter-inputs-row">
         {/* Search Bar */}
         <div className="search-input-wrapper">
@@ -79,6 +79,8 @@ const ExpenseFilters = ({
                 color: 'var(--text-muted)',
                 background: 'none',
                 border: 'none',
+                cursor: 'pointer',
+                padding: '4px',
               }}
             >
               <X size={14} />
@@ -86,69 +88,67 @@ const ExpenseFilters = ({
           )}
         </div>
 
-        {/* Sort Selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <ArrowUpDown size={15} style={{ color: 'var(--text-muted)' }} />
-          <select
-            className="form-select"
-            style={{ width: 'auto', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}
-            value={`${sortBy}-${order}`}
-            onChange={(e) => {
-              const [newSort, newOrder] = e.target.value.split('-');
-              onFilterChange('sortBy', newSort);
-              onFilterChange('order', newOrder);
-            }}
-          >
-            <option value="date-desc">Newest First</option>
-            <option value="date-asc">Oldest First</option>
-            <option value="amount-desc">Highest Amount ($$$ - $)</option>
-            <option value="amount-asc">Lowest Amount ($ - $$$)</option>
-            <option value="title-asc">Title (A - Z)</option>
-          </select>
-        </div>
+        {/* Secondary Filter Controls Cluster */}
+        <div className="filter-controls-cluster">
+          {/* Sort Selector */}
+          <div className="filter-control-item" style={{ flex: '1 1 140px' }}>
+            <ArrowUpDown size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+            <select
+              className="form-select filter-select"
+              value={`${sortBy}-${order}`}
+              onChange={(e) => {
+                const [newSort, newOrder] = e.target.value.split('-');
+                onFilterChange('sortBy', newSort);
+                onFilterChange('order', newOrder);
+              }}
+            >
+              <option value="date-desc">Newest First</option>
+              <option value="date-asc">Oldest First</option>
+              <option value="amount-desc">Highest Amount (PKR)</option>
+              <option value="amount-asc">Lowest Amount (PKR)</option>
+              <option value="title-asc">Title (A - Z)</option>
+            </select>
+          </div>
 
-        {/* Date Range Inputs */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <Calendar size={15} style={{ color: 'var(--text-muted)' }} />
-          <input
-            type="date"
-            className="form-input"
-            style={{ width: '135px', padding: '0.45rem 0.6rem', fontSize: '0.8rem' }}
-            value={startDate}
-            onChange={(e) => onFilterChange('startDate', e.target.value)}
-            title="Start date"
-          />
-          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>to</span>
-          <input
-            type="date"
-            className="form-input"
-            style={{ width: '135px', padding: '0.45rem 0.6rem', fontSize: '0.8rem' }}
-            value={endDate}
-            onChange={(e) => onFilterChange('endDate', e.target.value)}
-            title="End date"
-          />
-        </div>
+          {/* Date Range Inputs */}
+          <div className="filter-date-group">
+            <Calendar size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+            <input
+              type="date"
+              className="form-input filter-date-input"
+              value={startDate}
+              onChange={(e) => onFilterChange('startDate', e.target.value)}
+              title="Start date"
+              placeholder="Start"
+            />
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 700 }}>to</span>
+            <input
+              type="date"
+              className="form-input filter-date-input"
+              value={endDate}
+              onChange={(e) => onFilterChange('endDate', e.target.value)}
+              title="End date"
+              placeholder="End"
+            />
+          </div>
 
-        {/* Reset / Status Filter Button */}
-        {isFiltered && (
-          <button
-            type="button"
-            className="nav-btn"
-            onClick={onResetFilters}
-            style={{
-              padding: '0.45rem 0.75rem',
-              fontSize: '0.8rem',
-              color: 'var(--color-primary)',
-              borderColor: 'var(--color-primary)',
-            }}
-          >
-            <RotateCcw size={13} /> Reset Filters
-          </button>
-        )}
+          {/* Reset Filters Button */}
+          {isFiltered && (
+            <button
+              type="button"
+              className="nav-btn filter-reset-btn"
+              onClick={onResetFilters}
+              title="Clear all filters"
+            >
+              <RotateCcw size={13} />
+              <span>Reset</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Result Count Info */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '-0.3rem' }}>
+      <div className="filter-results-info">
         <span>
           Showing <strong>{filteredCount}</strong> of <strong>{totalCount}</strong> expense{totalCount === 1 ? '' : 's'}
         </span>
