@@ -196,7 +196,7 @@ function ExpenseTrackerDashboard() {
         {error && (
           <div
             style={{
-              padding: '0.85rem 1.25rem',
+              padding: '0.75rem 1.15rem',
               borderRadius: 'var(--radius-sm)',
               background: 'rgba(239, 68, 68, 0.12)',
               border: '1px solid rgba(239, 68, 68, 0.35)',
@@ -204,20 +204,21 @@ function ExpenseTrackerDashboard() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              marginBottom: '1.5rem',
-              fontSize: '0.85rem',
+              marginBottom: '1.25rem',
+              fontSize: '0.82rem',
               backdropFilter: 'blur(10px)',
+              width: '100%',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <AlertCircle size={18} />
-              <span>{error}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
+              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{error}</span>
             </div>
             <button
               type="button"
               className="nav-btn"
               onClick={handleRefresh}
-              style={{ fontSize: '0.78rem', padding: '0.3rem 0.65rem' }}
+              style={{ fontSize: '0.76rem', padding: '0.25rem 0.55rem', flexShrink: 0 }}
             >
               Retry
             </button>
@@ -244,9 +245,9 @@ function ExpenseTrackerDashboard() {
         {/* 2. Main Dashboard Grid (Form + List on left, Charts on right) */}
         <div className="dashboard-grid">
           {/* Left Column: Form & Transactions List */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {/* Desktop Add/Edit Form */}
-            <div className="desktop-form-wrapper">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', width: '100%', minWidth: 0 }}>
+            {/* Add/Edit Form */}
+            <div className="desktop-form-wrapper" style={{ width: '100%', minWidth: 0 }}>
               <ExpenseForm
                 onAddExpense={handleAddExpense}
                 onUpdateExpense={handleUpdateExpense}
@@ -276,7 +277,7 @@ function ExpenseTrackerDashboard() {
           </div>
 
           {/* Right Column: Visualizations & Analytics Panel */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', width: '100%', minWidth: 0 }}>
             <ChartPanel
               chartData={chartData}
               summaryMetrics={summaryMetrics}
@@ -293,7 +294,7 @@ function ExpenseTrackerDashboard() {
         onClick={() => setIsMobileFormOpen(true)}
         title="Add new expense"
       >
-        <Plus size={26} />
+        <Plus size={24} />
       </button>
 
       {/* Mobile Slide-Up Modal for Expense Form */}
@@ -302,7 +303,7 @@ function ExpenseTrackerDashboard() {
           <div
             className="modal-content"
             onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: '520px' }}
+            style={{ maxWidth: '500px' }}
           >
             <div className="card-header">
               <div className="card-title">
@@ -320,7 +321,7 @@ function ExpenseTrackerDashboard() {
                 <X size={16} />
               </button>
             </div>
-            <div style={{ padding: '1.25rem' }}>
+            <div style={{ padding: '1.15rem' }}>
               <ExpenseForm
                 onAddExpense={async (data) => {
                   await handleAddExpense(data);
@@ -382,7 +383,7 @@ function ExpenseTrackerDashboard() {
             {toast.type === 'info' && (
               <Info size={18} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
             )}
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, flex: 1 }}>{toast.message}</span>
+            <span style={{ fontSize: '0.82rem', fontWeight: 600, flex: 1 }}>{toast.message}</span>
             <button
               type="button"
               onClick={() => removeToast(toast.id)}
@@ -394,7 +395,7 @@ function ExpenseTrackerDashboard() {
                 padding: '3px',
               }}
             >
-              <X size={15} />
+              <X size={14} />
             </button>
           </div>
         ))}

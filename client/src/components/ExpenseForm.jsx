@@ -21,7 +21,6 @@ const ExpenseForm = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [shake, setShake] = useState(false);
 
-  // Ref on the "title" input so the form auto-focuses on mount & after submit
   const titleInputRef = useRef(null);
   const formRef = useRef(null);
 
@@ -50,7 +49,6 @@ const ExpenseForm = ({
         titleInputRef.current.focus();
       }
     } else {
-      // Reset form to defaults
       setTitle('');
       setAmount('');
       setCategory('Food');
@@ -112,7 +110,6 @@ const ExpenseForm = ({
       } else {
         await onAddExpense(expensePayload);
 
-        // Celebratory confetti pop
         try {
           confetti({
             particleCount: 35,
@@ -130,7 +127,6 @@ const ExpenseForm = ({
         setNotes('');
         setErrors({});
 
-        // Auto-refocus title input for rapid mouse-free entry
         setTimeout(() => {
           if (titleInputRef.current) {
             titleInputRef.current.focus();
@@ -145,24 +141,24 @@ const ExpenseForm = ({
   };
 
   return (
-    <div className={`card ${shake ? 'shake-error' : ''}`} ref={formRef}>
+    <div className={`card expense-form-card ${shake ? 'shake-error' : ''}`} ref={formRef}>
       <div className="card-header">
         <div className="card-title">
           {editingExpense ? (
             <>
-              <Edit3 size={18} style={{ color: 'var(--color-primary)' }} />
+              <Edit3 size={18} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
               <span>Edit Expense</span>
             </>
           ) : (
             <>
-              <PlusCircle size={18} style={{ color: 'var(--color-primary)' }} />
+              <PlusCircle size={18} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
               <span>Add New Expense</span>
             </>
           )}
         </div>
 
         {!editingExpense && (
-          <span className="rapid-fire-badge" title="Rapid-fire mode: submit and keep typing without mouse">
+          <span className="rapid-fire-badge" title="Rapid-fire mode: submit and keep typing">
             <Zap size={11} /> Rapid Entry
           </span>
         )}
@@ -180,7 +176,7 @@ const ExpenseForm = ({
       </div>
 
       <div className="card-body">
-        <form onSubmit={handleSubmit} noValidate>
+        <form onSubmit={handleSubmit} noValidate style={{ width: '100%' }}>
           {/* Title Input */}
           <div className="form-group">
             <label className="form-label" htmlFor="expense-title">
@@ -297,20 +293,19 @@ const ExpenseForm = ({
           </div>
 
           {/* Submit Action Buttons */}
-          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+          <div className="form-action-row">
             <button
               type="submit"
-              className="btn-primary"
-              style={{ flex: 1 }}
+              className="btn-primary form-submit-btn"
               disabled={isSubmitting}
             >
               {editingExpense ? (
                 <>
-                  <Edit3 size={17} /> Update Expense
+                  <Edit3 size={16} /> <span>Update Expense</span>
                 </>
               ) : (
                 <>
-                  <PlusCircle size={17} /> Save & Enter Next
+                  <PlusCircle size={16} /> <span>Save & Enter Next</span>
                 </>
               )}
             </button>
